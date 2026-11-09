@@ -5,55 +5,81 @@ import {
 
 let products = [];
 let cart = {};
-let config = { nome: 'Loja', whatsapp: '' };
+let config = { nome: 'Conveniência Duzinho', whatsapp: '' };
 
-// ---------- Config da loja ----------
+const CATEGORIES = [
+  { id: 'bebidas',     nome: 'Bebidas',     icon: '🥤' },
+  { id: 'salgadinhos', nome: 'Salgadinhos', icon: '🍟' },
+  { id: 'doces',       nome: 'Doces',       icon: '🍫' },
+  { id: 'eletronicos', nome: 'Eletrônicos', icon: '🔌' }
+];
+
 async function loadConfig() {
   try {
     const snap = await getDoc(doc(db, 'config', 'loja'));
-    if (snap.exists()) {
-      config = { ...config, ...snap.data() };
-      document.getElementById('store-name').textContent = config.nome;
-      document.title = config.nome;
-    }
+    if (snap.exists()) config = { ...config, ...snap.data() };
   } catch (e) { console.error(e); }
 }
 
-// ---------- Render produtos ----------
 function renderProducts() {
-  const term = document.getElementById('search').value.toLowerCase();
-  const grid = document.getElementById('products');
-  grid.innerHTML = '';
+  const term = document.getElementById('search').value.toLowerCase().trim();
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  let encontrou = false;
 
-  products
-    .filter(p => p.nome.toLowerCase().includes(term))
-    .sort((a, b) => (a.categoria || '').localeCompare(b.categoria || ''))
-    .forEach(p => {
+  CATEGORIES.forEach(cat => {
+    const prods = products
+      .filter(p => (p.categoria || '').toLowerCase() === cat.id)
+      .filter(p => !term || p.nome.toLowerCase().includes(term))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+
+    if (!prods.length) return;
+    encontrou = true;
+
+    const section = document.createElement('div');
+    section.className = 'category-section';
+
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    header.innerHTML = `
+      <span class="icon">${cat.icon}</span>
+      <h2>${cat.nome}</h2>
+      <div class="line"></div>
+    `;
+    section.appendChild(header);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+
+    prods.forEach(p => {
       const esgotado = (p.estoque || 0) <= 0;
       const el = document.createElement('div');
       el.className = 'product' + (esgotado ? ' esgotado' : '');
       el.innerHTML = `
-        <img src="${p.foto || 'https://via.placeholder.com/300x300?text=Sem+foto'}" alt="${p.nome}">
+        <img src="${p.foto || 'https://via.placeholder.com/300x300/1a1a1a/e50914?text=Sem+foto'}" alt="${p.nome}" />
         <h3>${p.nome}</h3>
-        ${p.categoria ? `<small>${p.categoria}</small>` : ''}
         <p class="price">${brl(p.preco)}</p>
-        <p class="stock">${esgotado ? '❌ Esgotado' : '✅ Estoque: ' + p.estoque}</p>
+        <p class="stock">${esgotado ? '❌ Esgotado' : 'Estoque: ' + p.estoque}</p>
         <button ${esgotado ? 'disabled' : ''}>Adicionar</button>
       `;
       if (!esgotado) el.querySelector('button').onclick = () => addToCart(p.id);
       grid.appendChild(el);
     });
+
+    section.appendChild(grid);
+    container.appendChild(section);
+  });
+
+  if (!encontrou) {
+    container.innerHTML = '<p style="text-align:center;color:#999;padding:40px 0;">Nenhum produto encontrado.</p>';
+  }
 }
 
-// ---------- Carrinho ----------
 function addToCart(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
   const atual = cart[id] || 0;
-  if (atual >= (p.estoque || 0)) {
-    alert('Quantidade máxima em estoque atingida.');
-    return;
-  }
+  if (atual >= (p.estoque || 0)) { alert('Quantidade máxima em estoque atingida.'); return; }
   cart[id] = atual + 1;
   renderCart();
 }
@@ -81,7 +107,7 @@ function renderCart() {
   document.getElementById('send-order').disabled = items.length === 0;
 
   const lista = document.getElementById('cart-items');
-  lista.innerHTML = items.length ? '' : '<p>Carrinho vazio.</p>';
+  lista.innerHTML = items.length ? '' : '<p style="color:#999">Carrinho vazio.</p>';
   items.forEach(i => {
     const row = document.createElement('div');
     row.className = 'cart-row';
@@ -98,14 +124,13 @@ function renderCart() {
   });
 }
 
-// ---------- Enviar pedido ----------
 async function sendOrder() {
   const btn = document.getElementById('send-order');
   const nome = document.getElementById('customer-name').value.trim();
   const obs  = document.getElementById('customer-note').value.trim();
 
   if (!nome) { alert('Por favor, informe seu nome.'); return; }
-  if (!config.whatsapp) { alert('Número da loja ainda não configurado.'); return; }
+  if (!config.whatsapp) { alert('O WhatsApp da loja ainda não foi configurado. Avise o dono.'); return; }
 
   const items = Object.entries(cart).map(([id, qtd]) => {
     const p = products.find(x => x.id === id);
@@ -118,30 +143,18 @@ async function sendOrder() {
   btn.textContent = 'Enviando...';
 
   try {
-    // 1) Salva o pedido no Firestore (fica pendente para você confirmar)
     await addDoc(collection(db, 'pedidos'), {
-      cliente: nome,
-      observacao: obs,
-      itens: items,
-      total,
-      status: 'pendente',
-      criadoEm: serverTimestamp()
+      cliente: nome, observacao: obs, itens: items, total,
+      status: 'pendente', criadoEm: serverTimestamp()
     });
 
-    // 2) Monta a mensagem pro WhatsApp
-    let msg = `*🛒 Novo Pedido*\n\nCliente: ${nome}\n-------------------\n`;
-    items.forEach(i => {
-      msg += `${i.qtd}x ${i.nome} — ${brl(i.preco * i.qtd)}\n`;
-    });
+    let msg = `*🛒 Novo Pedido — ${config.nome}*\n\n*Cliente:* ${nome}\n-------------------\n`;
+    items.forEach(i => { msg += `${i.qtd}x ${i.nome} — ${brl(i.preco * i.qtd)}\n`; });
     msg += `-------------------\n*Total: ${brl(total)}*`;
-    if (obs) msg += `\n\nObs: ${obs}`;
+    if (obs) msg += `\n\n*Obs:* ${obs}`;
 
-    window.open(
-      `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`,
-      '_blank'
-    );
+    window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
 
-    // 3) Limpa
     cart = {};
     document.getElementById('customer-name').value = '';
     document.getElementById('customer-note').value = '';
@@ -157,12 +170,10 @@ async function sendOrder() {
   }
 }
 
-// ---------- Util ----------
 function brl(n) {
   return 'R$ ' + (Number(n) || 0).toFixed(2).replace('.', ',');
 }
 
-// ---------- Init ----------
 function init() {
   document.getElementById('search').addEventListener('input', renderProducts);
   document.getElementById('cart-toggle').onclick = () =>
