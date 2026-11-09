@@ -182,13 +182,12 @@ main { padding: 24px 20px; max-width: 1100px; margin: 0 auto; }
   box-shadow: 0 10px 40px rgba(0,0,0,.7);
 }
 .login-logo {
-  max-height: 140px;
-  max-width: 320px;
+  height: 80px;
   width: auto;
+  max-width: 260px;
   object-fit: contain;
-  margin: 0 auto 12px;
-  display: block;
-  filter: drop-shadow(0 4px 14px rgba(229,9,20,.5));
+  flex-shrink: 0;
+  mix-blend-mode: screen;
 }
 #login-view h1 { text-align: center; font-size: 16px; color: var(--gray); letter-spacing: 3px; margin-bottom: 4px; }
 #login-view input, #login-view button {
