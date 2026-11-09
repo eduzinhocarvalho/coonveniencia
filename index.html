@@ -3,17 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Loja</title>
+  <title>Conveniência Duzinho</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <header>
-    <h1 id="store-name">Loja</h1>
+
+  <header class="topbar">
+    <div class="brand">CONVENIÊNCIA <span>DUZINHO</span></div>
     <input id="search" placeholder="🔍 Buscar produto..." />
   </header>
 
-  <main>
-    <div id="products" class="grid"></div>
+  <section class="hero">
+    <div class="hero-overlay">
+      <h1>BEM-VINDO À <span>DUZINHO</span></h1>
+      <p>Bebidas geladas, salgadinhos, doces e eletrônicos — peça direto pelo site!</p>
+      <a href="#produtos" class="cta">VER PRODUTOS ↓</a>
+    </div>
+  </section>
+
+  <main id="produtos">
+    <div id="sections"></div>
   </main>
 
   <button id="cart-toggle">🛒 Carrinho (<span id="cart-count">0</span>)</button>
@@ -27,6 +36,8 @@
     <button id="send-order">✅ Confirmar e enviar pedido</button>
     <button id="close-cart">Fechar</button>
   </div>
+
+  <a href="admin.html" id="admin-link" title="Área do dono">⚙️</a>
 
   <script type="module" src="js/catalog.js"></script>
 </body>
