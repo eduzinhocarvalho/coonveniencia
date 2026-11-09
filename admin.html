@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel — Conveniência Duzinho</title>
+  <title>Painel do Dono</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
   <!-- LOGIN -->
   <div id="login-view">
-    <h1>PAINEL <span>DUZINHO</span></h1>
+    <img src="img/logo.png" alt="Logo" class="login-logo" />
+    <h1>PAINEL DO DONO</h1>
     <input id="email"    type="email"    placeholder="Email" />
     <input id="password" type="password" placeholder="Senha" />
     <button id="login-btn">Entrar</button>
@@ -21,7 +22,7 @@
   <!-- PAINEL -->
   <div id="admin-view" class="hidden">
     <header class="admin-header">
-      <h1>PAINEL <span>DUZINHO</span></h1>
+      <img src="img/logo.png" alt="Logo" class="admin-logo" />
       <button id="logout-btn" class="ghost">Sair</button>
     </header>
 
@@ -41,8 +42,6 @@
     </section>
 
     <section id="tab-config" class="hidden">
-      <label>Nome da loja</label>
-      <input id="cfg-name" placeholder="Ex: Conveniência Duzinho" />
       <label>WhatsApp (só números, com DDI+DDD. Ex: 5511999999999)</label>
       <input id="cfg-whatsapp" placeholder="5511999999999" />
       <button id="save-config" class="primary">Salvar</button>
