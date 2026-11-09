@@ -5,7 +5,7 @@ import {
 
 let products = [];
 let cart = {};
-let config = { nome: 'Conveniência Duzinho', whatsapp: '' };
+let config = { whatsapp: '' };
 
 const CATEGORIES = [
   { id: 'bebidas',     nome: 'Bebidas',     icon: '🥤' },
@@ -148,7 +148,7 @@ async function sendOrder() {
       status: 'pendente', criadoEm: serverTimestamp()
     });
 
-    let msg = `*🛒 Novo Pedido — ${config.nome}*\n\n*Cliente:* ${nome}\n-------------------\n`;
+    let msg = `*🛒 Novo Pedido*\n\n*Cliente:* ${nome}\n-------------------\n`;
     items.forEach(i => { msg += `${i.qtd}x ${i.nome} — ${brl(i.preco * i.qtd)}\n`; });
     msg += `-------------------\n*Total: ${brl(total)}*`;
     if (obs) msg += `\n\n*Obs:* ${obs}`;
