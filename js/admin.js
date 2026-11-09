@@ -13,25 +13,20 @@ let currentPhoto = '';
 let productsCache = [];
 let unsubs = [];
 
-// ---------- Autenticação ----------
 document.getElementById('login-btn').onclick = async () => {
   try {
-    await signInWithEmailAndPassword(
-      auth,
+    await signInWithEmailAndPassword(auth,
       document.getElementById('email').value,
-      document.getElementById('password').value
-    );
+      document.getElementById('password').value);
   } catch (e) { showLoginError(e.message); }
 };
 
 document.getElementById('register-btn').onclick = async () => {
   if (!confirm('Criar a conta de dono com este email? Só faça isso uma vez.')) return;
   try {
-    await createUserWithEmailAndPassword(
-      auth,
+    await createUserWithEmailAndPassword(auth,
       document.getElementById('email').value,
-      document.getElementById('password').value
-    );
+      document.getElementById('password').value);
   } catch (e) { showLoginError(e.message); }
 };
 
@@ -55,19 +50,16 @@ onAuthStateChanged(auth, user => {
   }
 });
 
-// ---------- Abas ----------
 document.querySelectorAll('.tabs button').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     ['produtos', 'pedidos', 'config'].forEach(t =>
-      document.getElementById('tab-' + t).classList.add('hidden')
-    );
+      document.getElementById('tab-' + t).classList.add('hidden'));
     document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
   };
 });
 
-// ---------- Inicialização ----------
 function initAdmin() {
   if (unsubs.length) return;
 
@@ -84,21 +76,20 @@ function initAdmin() {
   loadConfigForm();
 }
 
-// ---------- Produtos ----------
 function renderProductList() {
   const list = document.getElementById('product-list');
   if (!list) return;
   list.innerHTML = '';
   productsCache
-    .sort((a, b) => (a.nome || '').localeCompare(b.nome || ''))
+    .sort((a, b) => (a.categoria || '').localeCompare(b.categoria || '') || (a.nome || '').localeCompare(b.nome || ''))
     .forEach(p => {
       const el = document.createElement('div');
       el.className = 'admin-product';
       el.innerHTML = `
-        <img src="${p.foto || 'https://via.placeholder.com/60'}" />
+        <img src="${p.foto || 'https://via.placeholder.com/60/1a1a1a/e50914'}" />
         <div class="info">
           <strong>${p.nome}</strong>
-          <small>${brl(p.preco)} • Estoque: ${p.estoque}</small>
+          <small>${brl(p.preco)} • Estoque: ${p.estoque} • ${p.categoria || '-'}</small>
         </div>
         <button class="edit ghost">Editar</button>
         <button class="del ghost">Excluir</button>
@@ -116,7 +107,7 @@ function openProductModal(p) {
   currentPhoto = p?.foto || '';
   document.getElementById('modal-title').textContent = p ? 'Editar Produto' : 'Novo Produto';
   document.getElementById('p-nome').value      = p?.nome || '';
-  document.getElementById('p-categoria').value = p?.categoria || '';
+  document.getElementById('p-categoria').value = p?.categoria || 'bebidas';
   document.getElementById('p-preco').value     = p?.preco ?? '';
   document.getElementById('p-estoque').value   = p?.estoque ?? '';
   document.getElementById('p-foto-url').value  = p?.foto?.startsWith('data:') ? '' : (p?.foto || '');
@@ -137,8 +128,7 @@ document.getElementById('p-foto-url').addEventListener('input', e => {
   if (!e.target.value) return;
   currentPhoto = e.target.value;
   const prev = document.getElementById('p-preview');
-  prev.src = currentPhoto;
-  prev.style.display = 'block';
+  prev.src = currentPhoto; prev.style.display = 'block';
 });
 
 document.getElementById('p-foto-file').addEventListener('change', async e => {
@@ -147,16 +137,15 @@ document.getElementById('p-foto-file').addEventListener('change', async e => {
   try {
     currentPhoto = await compressImage(file);
     const prev = document.getElementById('p-preview');
-    prev.src = currentPhoto;
-    prev.style.display = 'block';
+    prev.src = currentPhoto; prev.style.display = 'block';
   } catch (err) { alert('Erro na imagem: ' + err.message); }
 });
 
 document.getElementById('p-save').onclick = async () => {
-  const nome     = document.getElementById('p-nome').value.trim();
-  const categoria= document.getElementById('p-categoria').value.trim();
-  const preco    = parseFloat(document.getElementById('p-preco').value);
-  const estoque  = parseInt(document.getElementById('p-estoque').value, 10);
+  const nome      = document.getElementById('p-nome').value.trim();
+  const categoria = document.getElementById('p-categoria').value;
+  const preco     = parseFloat(document.getElementById('p-preco').value);
+  const estoque   = parseInt(document.getElementById('p-estoque').value, 10);
 
   if (!nome || isNaN(preco) || isNaN(estoque)) {
     document.getElementById('p-error').textContent = 'Preencha nome, preço e estoque.';
@@ -177,20 +166,18 @@ async function deleteProduct(id) {
   await deleteDoc(doc(db, 'produtos', id));
 }
 
-// ---------- Pedidos ----------
 function renderOrders(snap) {
   const list = document.getElementById('order-list');
   if (!list) return;
   list.innerHTML = '';
-  if (snap.empty) { list.innerHTML = '<p>Nenhum pedido ainda.</p>'; return; }
+  if (snap.empty) { list.innerHTML = '<p style="color:#999">Nenhum pedido ainda.</p>'; return; }
 
   snap.forEach(d => {
     const p = d.data();
     const el = document.createElement('div');
     el.className = 'admin-order status-' + (p.status || 'pendente');
     const itens = (p.itens || []).map(i =>
-      `<li>${i.qtd}x ${i.nome} — ${brl(i.preco * i.qtd)}</li>`
-    ).join('');
+      `<li>${i.qtd}x ${i.nome} — ${brl(i.preco * i.qtd)}</li>`).join('');
 
     el.innerHTML = `
       <div class="order-head">
@@ -224,31 +211,24 @@ async function confirmarPedido(pedidoId) {
       const pedido = pedidoSnap.data();
       if (pedido.status !== 'pendente') throw new Error('Pedido já foi processado.');
 
-      // 1) LÊ tudo primeiro (exigência do Firestore)
       const produtos = [];
       for (const item of pedido.itens) {
         const ref = doc(db, 'produtos', item.produtoId);
         const snap = await tx.get(ref);
         produtos.push({ ref, snap, item });
       }
-
-      // 2) Valida
       for (const { snap, item } of produtos) {
         if (!snap.exists()) throw new Error(`Produto removido: ${item.nome}`);
         if ((snap.data().estoque || 0) < item.qtd)
           throw new Error(`Estoque insuficiente: ${item.nome}`);
       }
-
-      // 3) Atualiza
       for (const { ref, snap, item } of produtos) {
         tx.update(ref, { estoque: snap.data().estoque - item.qtd });
       }
       tx.update(pedidoRef, { status: 'confirmado', confirmadoEm: serverTimestamp() });
     });
     alert('Pedido confirmado! Estoque atualizado.');
-  } catch (e) {
-    alert('Erro: ' + e.message);
-  }
+  } catch (e) { alert('Erro: ' + e.message); }
 }
 
 async function cancelarPedido(pedidoId) {
@@ -256,11 +236,10 @@ async function cancelarPedido(pedidoId) {
   await updateDoc(doc(db, 'pedidos', pedidoId), { status: 'cancelado' });
 }
 
-// ---------- Configurações ----------
 async function loadConfigForm() {
   const snap = await getDoc(doc(db, 'config', 'loja'));
   const c = snap.exists() ? snap.data() : {};
-  document.getElementById('cfg-name').value = c.nome || '';
+  document.getElementById('cfg-name').value = c.nome || 'Conveniência Duzinho';
   document.getElementById('cfg-whatsapp').value = c.whatsapp || '';
 }
 
@@ -271,7 +250,6 @@ document.getElementById('save-config').onclick = async () => {
   alert('Configurações salvas!');
 };
 
-// ---------- Helpers ----------
 function brl(n) {
   return 'R$ ' + (Number(n) || 0).toFixed(2).replace('.', ',');
 }
@@ -284,15 +262,9 @@ function compressImage(file, maxSize = 500, quality = 0.75) {
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let { width, height } = img;
-        if (width > height && width > maxSize) {
-          height = Math.round(height * maxSize / width);
-          width = maxSize;
-        } else if (height > maxSize) {
-          width = Math.round(width * maxSize / height);
-          height = maxSize;
-        }
-        canvas.width = width;
-        canvas.height = height;
+        if (width > height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
+        else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
+        canvas.width = width; canvas.height = height;
         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
         resolve(canvas.toDataURL('image/jpeg', quality));
       };
