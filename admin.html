@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel do Dono</title>
+  <title>Painel — Conveniência Duzinho</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
   <!-- LOGIN -->
   <div id="login-view">
-    <h1>Painel do Dono</h1>
+    <h1>PAINEL <span>DUZINHO</span></h1>
     <input id="email"    type="email"    placeholder="Email" />
     <input id="password" type="password" placeholder="Senha" />
     <button id="login-btn">Entrar</button>
@@ -21,8 +21,8 @@
   <!-- PAINEL -->
   <div id="admin-view" class="hidden">
     <header class="admin-header">
-      <h1>Painel do Dono</h1>
-      <button id="logout-btn">Sair</button>
+      <h1>PAINEL <span>DUZINHO</span></h1>
+      <button id="logout-btn" class="ghost">Sair</button>
     </header>
 
     <nav class="tabs">
@@ -42,9 +42,9 @@
 
     <section id="tab-config" class="hidden">
       <label>Nome da loja</label>
-      <input id="cfg-name" placeholder="Ex: Conveniência do Zé" />
-      <label>WhatsApp (só números, com DDI+DDD)</label>
-      <input id="cfg-whatsapp" placeholder="Ex: 5511999999999" />
+      <input id="cfg-name" placeholder="Ex: Conveniência Duzinho" />
+      <label>WhatsApp (só números, com DDI+DDD. Ex: 5511999999999)</label>
+      <input id="cfg-whatsapp" placeholder="5511999999999" />
       <button id="save-config" class="primary">Salvar</button>
     </section>
   </div>
@@ -54,7 +54,12 @@
     <div class="modal-content">
       <h2 id="modal-title">Novo Produto</h2>
       <input id="p-nome" placeholder="Nome do produto" />
-      <input id="p-categoria" placeholder="Categoria (ex: Bebidas)" />
+      <select id="p-categoria">
+        <option value="bebidas">Bebidas</option>
+        <option value="salgadinhos">Salgadinhos</option>
+        <option value="doces">Doces</option>
+        <option value="eletronicos">Eletrônicos</option>
+      </select>
       <input id="p-preco" type="number" step="0.01" placeholder="Preço (R$)" />
       <input id="p-estoque" type="number" placeholder="Estoque" />
       <input id="p-foto-url" placeholder="URL da foto (opcional)" />
