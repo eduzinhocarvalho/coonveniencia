@@ -239,14 +239,12 @@ async function cancelarPedido(pedidoId) {
 async function loadConfigForm() {
   const snap = await getDoc(doc(db, 'config', 'loja'));
   const c = snap.exists() ? snap.data() : {};
-  document.getElementById('cfg-name').value = c.nome || 'Conveniência Duzinho';
   document.getElementById('cfg-whatsapp').value = c.whatsapp || '';
 }
 
 document.getElementById('save-config').onclick = async () => {
-  const nome     = document.getElementById('cfg-name').value.trim();
   const whatsapp = document.getElementById('cfg-whatsapp').value.replace(/\D/g, '');
-  await setDoc(doc(db, 'config', 'loja'), { nome, whatsapp }, { merge: true });
+  await setDoc(doc(db, 'config', 'loja'), { whatsapp }, { merge: true });
   alert('Configurações salvas!');
 };
 
