@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel do Dono</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login-view">
+    <h1>Painel do Dono</h1>
+    <input id="email"    type="email"    placeholder="Email" />
+    <input id="password" type="password" placeholder="Senha" />
+    <button id="login-btn">Entrar</button>
+    <button id="register-btn" class="ghost">Criar conta (só a primeira vez)</button>
+    <p id="login-error" class="error"></p>
+  </div>
+
+  <!-- PAINEL -->
+  <div id="admin-view" class="hidden">
+    <header class="admin-header">
+      <h1>Painel do Dono</h1>
+      <button id="logout-btn">Sair</button>
+    </header>
+
+    <nav class="tabs">
+      <button data-tab="produtos" class="active">Produtos</button>
+      <button data-tab="pedidos">Pedidos</button>
+      <button data-tab="config">Configurações</button>
+    </nav>
+
+    <section id="tab-produtos">
+      <button id="new-product" class="primary">+ Novo Produto</button>
+      <div id="product-list"></div>
+    </section>
+
+    <section id="tab-pedidos" class="hidden">
+      <div id="order-list"></div>
+    </section>
+
+    <section id="tab-config" class="hidden">
+      <label>Nome da loja</label>
+      <input id="cfg-name" placeholder="Ex: Conveniência do Zé" />
+      <label>WhatsApp (só números, com DDI+DDD)</label>
+      <input id="cfg-whatsapp" placeholder="Ex: 5511999999999" />
+      <button id="save-config" class="primary">Salvar</button>
+    </section>
+  </div>
+
+  <!-- MODAL PRODUTO -->
+  <div id="product-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modal-title">Novo Produto</h2>
+      <input id="p-nome" placeholder="Nome do produto" />
+      <input id="p-categoria" placeholder="Categoria (ex: Bebidas)" />
+      <input id="p-preco" type="number" step="0.01" placeholder="Preço (R$)" />
+      <input id="p-estoque" type="number" placeholder="Estoque" />
+      <input id="p-foto-url" placeholder="URL da foto (opcional)" />
+      <label class="file-label">Ou envie uma foto do celular:
+        <input id="p-foto-file" type="file" accept="image/*" />
+      </label>
+      <img id="p-preview" />
+      <div class="modal-actions">
+        <button id="p-save" class="primary">Salvar</button>
+        <button id="p-cancel" class="ghost">Cancelar</button>
+      </div>
+      <p id="p-error" class="error"></p>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>
